@@ -1,0 +1,7 @@
+public class AppointmentController {
+        @AuraEnabled(cacheable=true)
+    public static List<Appointment_Slots__c> getActiveAppointmentSlots() {
+        return [SELECT Id, Appointment_Date__c, Start_Time__c, End_Time__c FROM Appointment_Slots__c WHERE isActive__c = true];
+    }
+   
+}
