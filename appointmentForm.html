@@ -1,0 +1,24 @@
+<template>
+    <lightning-card  variant="Narrow"  title="AppointmentForm" >
+          <lightning-record-edit-form object-api-name="Appointment_Details__c" onsubmit={handleSubmit} >
+                  <lightning-messages></lightning-messages>
+                      <div class="slds-grid slds-wrap slds-gutters">
+                          <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-around_x-small">
+                               <lightning-input-field field-name="Contact__c" required></lightning-input-field>
+                         </div>
+                         <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-around_x-small">
+                               <lightning-input-field field-name="Subject__c" required></lightning-input-field>
+                         </div>
+                         <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-around_x-small">
+                                <lightning-input-field field-name="Appointment_Date__c" type="datetime" required onchange={handleDateTimeChange}></lightning-input-field>
+                          </div>
+                         <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-around_x-small">
+                               <lightning-input-field field-name="Description__c" required></lightning-input-field>    
+                         </div>
+                            <div style="margin-left:30px">
+                                  <lightning-button type="submit" variant="brand" label="Save"></lightning-button>
+                          </div>
+                    </div>
+          </lightning-record-edit-form>
+      </lightning-card>
+</template>
