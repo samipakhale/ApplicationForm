@@ -1,0 +1,67 @@
+<!-- flowCaller.html -->
+<template>
+    <lightning-card title="Create Account" icon-name="standard:account">
+        <div class="slds-m-around_medium"> <!-- Add margin around the card -->
+            <lightning-flow
+                flow-api-name={flowApiName}
+                onstatuschange={handleFlowStatusChange}>
+            </lightning-flow>
+        </div>
+    </lightning-card>
+</template>
+
+
+import { LightningElement } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent'; // For showing the toast message
+import { NavigationMixin } from 'lightning/navigation'; // For navigation
+
+
+export default class CallScreenFlowFromLWC extends LightningElement {
+
+    flowApiName = 'CreateAccountRecord'; // Replace with your Flow API Name
+    createdRecordId; // To store the created Account Id
+
+    handleFlowStatusChange(event) {
+        if (event.detail.status === 'FINISHED') {
+            const flowOutputs = event.detail.outputVariables;
+            flowOutputs.forEach(output => {
+                if (output.name === 'AccountId') { // Replace 'AccountId' with the flow's output variable for Account Id
+                    this.createdRecordId = output.value;
+                }
+            });
+
+            // Fire a toast message to notify the user
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Success',
+                    message: 'Account record created successfully!',
+                    variant: 'success'
+                })
+            );
+
+            // Navigate to the newly created Account's detail page
+            this[NavigationMixin.Navigate]({
+                type: 'standard__recordPage',
+                attributes: {
+                    recordId: this.createdRecordId,
+                    objectApiName: 'Account',
+                    actionName: 'view'
+                }
+            });
+        }
+    }
+
+}
+
+
+<?xml version="1.0"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+	<apiVersion>60.0</apiVersion>
+	<isExposed>true</isExposed>
+	<targets>
+		<target>lightning__AppPage</target>
+		<target>lightning__HomePage</target>
+		<target>lightning__RecordPage</target>
+		<target>lightning__RecordAction</target>
+	</targets>
+</LightningComponentBundle>
