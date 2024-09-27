@@ -1,0 +1,134 @@
+<template>
+    <lightning-card title="Simple Calculator">
+        <div class="slds-m-around_medium">
+            <lightning-input 
+                label="Number 1" 
+                name="num1" 
+                type="number" 
+                onchange={handleInputChange}>
+            </lightning-input>
+            <lightning-input 
+                label="Number 2" 
+                name="num2" 
+                type="number" 
+                onchange={handleInputChange}>
+            </lightning-input>
+        </div>
+        <div class="slds-m-around_medium">
+            <lightning-button label="Add" onclick={add}></lightning-button>
+            <lightning-button label="Subtract" onclick={subtract}></lightning-button>
+            <lightning-button label="Multiply" onclick={multiply}></lightning-button>
+        </div>
+        <div class="slds-m-around_medium">
+            <p>Result: {result}</p>
+        </div>
+    </lightning-card>
+</template>
+
+
+import { LightningElement, track, wire } from 'lwc';
+import { publish, MessageContext } from 'lightning/messageService';
+import COUNT_UPDATE_CHANNEL from '@salesforce/messageChannel/CountUpdatemessageChannel__c';
+
+export default class PubComponent extends LightningElement {
+    @track num1 = 0;
+    @track num2 = 0;
+    @track result = 0;
+
+    @wire(MessageContext)
+    messageContext;
+
+    handleInputChange(event) {
+        const field = event.target.name;
+        if (field === 'num1') {
+            this.num1 = parseFloat(event.target.value) || 0;
+        } else if (field === 'num2') {
+            this.num2 = parseFloat(event.target.value) || 0;
+        }
+    }
+
+    add() {
+        this.result = this.num1 + this.num2;
+        this.publishResult('add');
+    }
+
+    subtract() {
+        this.result = this.num1 - this.num2;
+        this.publishResult('subtract');
+    }
+
+    multiply() {
+        this.result = this.num1 * this.num2;
+        this.publishResult('multiply');
+    }
+
+    publishResult(operator) {
+        const payload = {
+            operator: operator,
+            constant: this.result
+        };
+        publish(this.messageContext, COUNT_UPDATE_CHANNEL, payload);
+    }
+}
+
+
+
+
+//Child Component//
+
+<template>
+    <lightning-card title="Counter">
+        <div class="slds-m-around_medium">
+            <p>Count: {count}</p>
+            <lightning-button label="Increment" onclick={increment}></lightning-button>
+            <lightning-button label="Decrement" onclick={decrement}></lightning-button>
+            <lightning-button label="Reset" onclick={reset}></lightning-button>
+        </div>
+    </lightning-card>
+</template>
+
+import { LightningElement, track,wire } from 'lwc';
+import { subscribe, MessageContext } from 'lightning/messageService';
+import COUNT_UPDATE_CHANNEL from '@salesforce/messageChannel/CountUpdatemessageChannel__c';
+
+
+export default class SubComponnet extends LightningElement {
+  @track count = 0;
+
+   @wire(MessageContext)
+    messageContext;
+
+    connectedCallback() {
+        this.subscribeToMessageChannel();
+    }
+
+    subscribeToMessageChannel() {
+        subscribe(this.messageContext, COUNT_UPDATE_CHANNEL, (message) => {
+            this.handleMessage(message);
+        });
+    }
+
+    handleMessage(message) {
+        if (message.operator === 'add') {
+            this.count += message.constant;
+        } else if (message.operator === 'subtract') {
+            this.count -= message.constant;
+        } else if (message.operator === 'multiply') {
+            this.count *= message.constant;
+        }
+    }
+
+    increment() {
+        this.count++;
+    }
+
+    decrement() {
+        this.count--;
+    }
+
+    reset() {
+        this.count = 0;
+    }
+}
+
+
